@@ -1,0 +1,160 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-06 02:28:52.657448",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "\u0627\u0644\u062e\u062f\u0645\u0629_section",
+  "service_name",
+  "category",
+  "column_break_uxqq",
+  "rate",
+  "image",
+  "naming_series",
+  "section_break_tuqk",
+  "table_material",
+  "account_section",
+  "income_account",
+  "column_break_osor",
+  "discount_account"
+ ],
+ "fields": [
+  {
+   "fieldname": "\u0627\u0644\u062e\u062f\u0645\u0629_section",
+   "fieldtype": "Section Break",
+   "label": "\u0627\u0644\u062e\u062f\u0645\u0629"
+  },
+  {
+   "fieldname": "service_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "\u0623\u0633\u0645 \u0627\u0644\u062e\u062f\u0645\u0629",
+   "options": "Item",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "\u0627\u0644\u0641\u0626\u0647",
+   "options": "Item Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_uxqq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "SER-"
+  },
+  {
+   "fieldname": "section_break_tuqk",
+   "fieldtype": "Section Break",
+   "label": "\u0627\u0644\u0645\u0648\u0627\u062f"
+  },
+  {
+   "fieldname": "table_material",
+   "fieldtype": "Table",
+   "hidden": 1,
+   "label": "\u0627\u0644\u0645\u0648\u0627\u062f \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645\u0629 \u0641\u064a  \u0627\u0644\u062e\u062f\u0645\u0629",
+   "options": "Service Material",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_section",
+   "fieldtype": "Section Break",
+   "label": "Account "
+  },
+  {
+   "fieldname": "income_account",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "\u062d\u0633\u0627\u0628 \u0627\u0644\u062e\u062f\u0645\u0629",
+   "options": "Account",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "discount_account",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "\u062d\u0633\u0627\u0628 \u0627\u0644\u062e\u0635\u0645",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_osor",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "\u0627\u0644\u0633\u0639\u0631",
+   "non_negative": 1,
+   "reqd": 1
+  }
+ ],
+ "image_field": "image",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-09 02:41:53.932754",
+ "modified_by": "Administrator",
+ "module": "Coffee",
+ "name": "Coffee Service",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "reception",
+   "select": 1,
+   "share": 1
+  }
+ ],
+ "search_fields": "category",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "service_name",
+ "translated_doctype": 1
+}
