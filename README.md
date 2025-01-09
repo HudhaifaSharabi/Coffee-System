@@ -1,1 +1,7 @@
-# Coffee-System
+## Coffee
+
+Coffee Store System
+
+#### License
+
+mit
