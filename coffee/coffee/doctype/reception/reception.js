@@ -138,7 +138,9 @@ frappe.ui.form.on('Reception', {
                 });
             }).addClass('btn-primary');
         }
-
+        frm.add_custom_button(__(' طباعه'), function () {
+            select_printer_and_print(print_arabic_utf8, frm);
+        }).addClass('btn-primary');
         // Fetch Item Groups and generate buttons dynamically
         frappe.call({
             method: 'frappe.client.get_list',
@@ -229,7 +231,7 @@ function select_printer_and_print(printFunction, frm) {
         .then(printers => {
             const selected_printer = prompt(
                 "Select a printer:\n" + printers.join("\n"),
-                printers[0] // Default to the first printer
+                printers[1] // Default to the first printer
             );
 
             if (selected_printer) {
@@ -241,55 +243,70 @@ function select_printer_and_print(printFunction, frm) {
         .catch(error => frappe.msgprint(`Error: ${error}`));
 }
 function print_arabic_utf8(frm, printer) {
-    const config = qz.configs.create(printer);
-
-    // Customer Invoice HTML
-    const customerInvoice = `
-      
-
-
-
-
-        <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; height: 100vh; position: relative; background: url('http://localhost:82/files/logo_-1.png') no-repeat center center; background-size: contain;" dir="rtl">
-            <div style="text-align: center; margin-bottom: 40px;">
-                <h2 style="margin: 0; font-size: 20px;">فاتورة العميل</h2>
-            </div>
-            <div dir="rtl">
-                <p><strong>التاريخ:</strong> ${frm.doc.date}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطلب: ${frm.doc.order_number}</p>
-                    <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.table_no}</p>
-                </div>
-                
-
-                <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
-                <h4 style="margin-bottom: 10px;">تفاصيل الطلب:</h4>
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                        <thead>
-                            <tr style="text-align: left;">
-                                <th style="padding: 8px; border: 1px solid #ddd; text-align: center; ">المنتج</th>
-                                <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">الكمية</th>
-                                <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">السعر</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${frm.doc.order_details.map(row => `
-                                <tr>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${row.item_name}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.quantity}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${row.rate}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;"><strong>الإجمالي:</strong> ${frm.doc.total}</p>
-                        <p style="margin: 0; font-size: 12px; font-weight: bold; direction: rtl;"><strong>المستخدم:</strong> ${frm.doc.user_name}</p>
+    // Get current time in HH:mm format
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+    
+    // Get user's full name
+    frappe.call({
+        method: 'frappe.client.get',
+        args: {
+            doctype: 'User',
+            name: frm.doc.user_name
+        },
+        callback: function(response) {
+            const user = response.message;
+            const fullName = user.full_name;
+            
+            const config = qz.configs.create(printer);
+            
+            // Update the customerInvoice template
+            const customerInvoice = `
+                <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; height: 100vh; position: relative; background: url('http://localhost:84/files/logo_-1.png') no-repeat center center; background-size: contain;" dir="rtl">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <h2 style="margin: 0; font-size: 20px;">فاتورة العميل</h2>
                     </div>
-                    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
-                    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
-                    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                    <div dir="rtl">
+                    
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">الوقت: ${time}</p>
+                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">التاريخ: ${frm.doc.date} </p>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطلب: ${frm.doc.order_number}</p>
+                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.table_no}</p>
+                        </div>
+                        
+
+                        <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                        <h4 style="margin-bottom: 10px;">تفاصيل الطلب:</h4>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                <thead>
+                                    <tr style="text-align: left;">
+                                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right; ">المنتج</th>
+                                        <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">الكمية</th>
+                                        <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">السعر</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${frm.doc.order_details.map(row => `
+                                        <tr>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${row.item_name}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.quantity}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.rate}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;"><strong>الإجمالي:</strong> ${frm.doc.total}</p>
+                                <p style="margin: 0; font-size: 12px; font-weight: bold; direction: rtl;"><strong>المستخدم:</strong> ${fullName}</p>
+                            </div>
+                            <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                            <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                            <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
 
 
                 </div>
@@ -297,49 +314,58 @@ function print_arabic_utf8(frm, printer) {
         </div>
     `;
 
-    // Chef Invoice HTML
-    const chefInvoice = `
-    <div style="font-family: Arial, sans-serif; margin: 20px;" dir="rtl">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; font-size: 20px;"> الشيف</h2>
-        </div>
-        <div dir="rtl">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطلب: ${frm.doc.order_number}</p>
-                <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.table_no}</p>
+            // Update the chefInvoice template
+            const chefInvoice = `
+            <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; height: 100vh; position: relative; background: url('http://localhost:84/files/logo_-1.png') no-repeat center center; background-size: contain;" dir="rtl">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 20px;"> الشيف</h2>
+                </div>
+                <div dir="rtl">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">الوقت: ${time}</p>
+                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">التاريخ: ${frm.doc.date} </p>
+                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطلب: ${frm.doc.order_number}</p>
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.table_no}</p>
+                    </div>
+                    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                    <h4 style="margin-bottom: 10px;">تفاصيل الطلب:</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead>
+                            <tr  text-align: left;">
+                                <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">المنتج</th>
+                                <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">الكمية</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${frm.doc.order_details.map(row => `
+                                <tr>
+                                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${row.item_name}</td>
+                                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.quantity}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
+                </div>
+                
+                
             </div>
-            <p><strong>التاريخ:</strong> ${frm.doc.date}</p>
-            <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
-            <h4 style="margin-bottom: 10px;">تفاصيل الطلب:</h4>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                <thead>
-                    <tr style="background-color: #f5f5f5; text-align: left;">
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">المنتج</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">الكمية</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${frm.doc.order_details.map(row => `
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd;">${row.item_name}</td>
-                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.quantity}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
-    <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
-`;
-    // Print Customer Invoice
-    qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: customerInvoice }])
-        .then(() => {
-            frappe.show_alert({ message: 'فاتورة العميل تم إرسالها للطباعة!', indicator: 'green' });
+            
+            `;
 
-            // Print Chef Invoice after Customer Invoice
-            return qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: chefInvoice }]);
-        })
-        .then(() => frappe.show_alert({ message: 'طلب الشيف تم إرساله للطباعة!', indicator: 'green' }))
-        .catch(error => frappe.msgprint(`خطأ: ${error}`));
+            // Print Customer Invoice
+            qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: customerInvoice }])
+                .then(() => {
+                    frappe.show_alert({ message: 'فاتورة العميل تم إرسالها للطباعة!', indicator: 'green' });
+
+                    // Print Chef Invoice after Customer Invoice
+                    return qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: chefInvoice }]);
+                })
+                .then(() => frappe.show_alert({ message: 'طلب الشيف تم إرساله للطباعة!', indicator: 'green' }))
+                .catch(error => frappe.msgprint(`خطأ: ${error}`));
+        }
+    });
 }
