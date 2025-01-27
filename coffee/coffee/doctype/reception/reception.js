@@ -55,7 +55,7 @@ function show_quantity_dialog(item_code, item, item_rate, frm) {
 // Function to fetch and display items by Item Group
 async function show_items_by_group(item_group_name, frm) {
     const placeholderImage = '/assets/frappe/images/item-placeholder.png';
-    let buttons_html = `<div style="display: flex; flex-wrap; wrap; justify-content: space-evenly; gap: 15px;">`;
+    let buttons_html = `<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: 15px;">`;
 
     try {
         let response = await frappe.call({
@@ -63,10 +63,10 @@ async function show_items_by_group(item_group_name, frm) {
             args: {
                 doctype: 'Coffee Service',
                 filters: {
-                    
                     'category': item_group_name,
+                    'statues': "نشط",
                 },
-                fields: ['name', 'service_name', 'image' ,'rate'],
+                fields: ['name', 'service_name', 'image'],
             },
         });
 
@@ -76,24 +76,39 @@ async function show_items_by_group(item_group_name, frm) {
             return;
         }
 
-        items.forEach(function (item) {
+        for (let item of items) {
+            let rate = 0;
+            if (item.service_name) {
+                try {
+                    let rate_response = await frappe.call({
+                        method: 'lilycenter.lilycenter.doctype.reception_form.reception_form.get_latest_price',
+                        args: {
+                            item_code: item.service_name,
+                        },
+                    });
+                    rate = rate_response.message || 0;
+                } catch {
+                    frappe.msgprint(__('Failed to fetch rate for service: ') + item.service_name);
+                }
+            }
+
             let item_image = item.image || placeholderImage;
             buttons_html += `
-                 <div style="width: 100px; margin: 10px; text-align: center; flex-shrink: 0;">
+                <div style="width: 100px; margin: 10px; text-align: center; flex-shrink: 0;">
                     <button class="btn btn-secondary" style="width: 100%; height: 100px; border-radius: 10px; padding: 0; text-align: center; 
                         background-image: url('${item_image}'); background-size: cover; background-position: center; color: white; display: flex; 
                         justify-content: center; align-items: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
-                        data-item-name="${item.service_name}" data-item-code="${item.name}" data-item-rate="${item.rate}">
-                        <p style="font-size: 12px; margin: 0; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);">${item.service_name} : ${item.rate}</p>
+                        data-item-name="${item.service_name}" data-item-code="${item.name}" data-item-rate="${rate}">
+                        <p style="font-size: 12px; margin: 0; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);">${item.service_name} : ${rate}</p>
                     </button>
                 </div>
             `;
-        });
+        }
 
         buttons_html += `</div>`;
 
         frappe.msgprint({
-            title: __('Items for Group: ') + item_group_name,
+            title: item_group_name,
             message: buttons_html,
             indicator: 'blue',
         });
@@ -111,16 +126,25 @@ async function show_items_by_group(item_group_name, frm) {
                 });
             });
         }, 500); // Ensure the DOM is loaded
-       
     } catch (error) {
         frappe.msgprint(__('Failed to fetch items: ') + error.message);
     }
 }
 
+
 // Frappe form trigger for 'Reception'
 frappe.ui.form.on('Reception', {
 
-
+    onload: function(frm) {
+        // Set query to filter customers for the 'customer' field
+        frm.set_query('customer', function() {
+            return {
+                filters: {
+                    'customer_group': 'Coffee' // Adjust this to the correct field/value in your setup
+                }
+            };
+        });
+    },
     refresh: function (frm) {
         // Add "Mark as Ready" button
         if (frappe.user.has_role('Chif') && frm.doc.status != "Ready") {
@@ -190,8 +214,56 @@ frappe.ui.form.on('Reception', {
    // Add a button for the chef
    before_save: function(frm) {
     // Call the print function before saving
-    select_printer_and_print(print_arabic_utf8, frm);
+    if (frm.is_new()) {
+        // Call the print function before saving
+        select_printer_and_print(print_arabic_utf8, frm);
+    }    
+    if (frm.doc.order_details && frm.doc.order_details.length > 0) {
+            
+        frm.clear_table('materials');
+
+        frm.doc.order_details.forEach(service => {
+            
+
+
+            frappe.call({
+                method: 'coffee.coffee.doctype.reception.reception.get_material',
+                args: {
+                    condition_value: service.item
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        r.message.forEach(function(row) {
+                            var child = frm.add_child("materials");
+                            child.item_code = row.item_code; 
+                            child.quantity = (service.quantity * row.quantity); 
+                            child.uom = row.uom;
+                            child.service_name = service.item_name;
+                            
+                            // جلب آخر سعر من Stock Ledger Entry
+                            frappe.call({
+                                method: 'lilycenter.lilycenter.doctype.reception_form.reception_form.get_latest_stock_rate',
+                                args: {
+                                    item_code: row.item_code
+                                },
+                                callback: function(r) {
+                                    if (r.message) {
+                                        child.rate = r.message;
+                                        frm.refresh_field("materials");
+                                    }
+                                }
+                            });
+                        });
+                        frm.refresh_field("materials");
+                    }
+                }
+            });
+            
+        });
+    
+    }
 }
+
 });
 
 function calculate_grand_total(frm) {
@@ -275,7 +347,7 @@ function print_arabic_utf8(frm, printer) {
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطلب: ${frm.doc.order_number}</p>
-                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.table_no}</p>
+                            <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.customer}</p>
                         </div>
                         
 
@@ -287,6 +359,7 @@ function print_arabic_utf8(frm, printer) {
                                         <th style="padding: 8px; border: 1px solid #ddd; text-align: right; ">المنتج</th>
                                         <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">الكمية</th>
                                         <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">السعر</th>
+                                        <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">المجموع</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -295,6 +368,7 @@ function print_arabic_utf8(frm, printer) {
                                             <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${row.item_name}</td>
                                             <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.quantity}</td>
                                             <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.rate}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${row.total}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -327,7 +401,7 @@ function print_arabic_utf8(frm, printer) {
                         </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطلب: ${frm.doc.order_number}</p>
-                        <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.table_no}</p>
+                        <p style="margin: 0; font-size: 14px; font-weight: bold; direction: rtl;">رقم الطاولة: ${frm.doc.customer}</p>
                     </div>
                     <hr style="margin: 20px 0; border-top: 1px solid #ccc;">
                     <h4 style="margin-bottom: 10px;">تفاصيل الطلب:</h4>

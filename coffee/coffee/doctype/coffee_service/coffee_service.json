@@ -1,24 +1,23 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "naming_series:",
+ "autoname": "field:service_name",
  "creation": "2025-01-06 02:28:52.657448",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "\u0627\u0644\u062e\u062f\u0645\u0629_section",
   "service_name",
-  "category",
+  "statues",
   "column_break_uxqq",
-  "rate",
+  "category",
   "image",
-  "naming_series",
   "section_break_tuqk",
   "table_material",
-  "account_section",
+  "section_break_yysd",
   "income_account",
-  "column_break_osor",
-  "discount_account"
+  "column_break_wvxw",
+  "cost_center"
  ],
  "fields": [
   {
@@ -28,7 +27,7 @@
   },
   {
    "fieldname": "service_name",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "\u0623\u0633\u0645 \u0627\u0644\u062e\u062f\u0645\u0629",
    "options": "Item",
@@ -36,6 +35,7 @@
    "unique": 1
   },
   {
+   "fetch_from": "service_name.item_group",
    "fieldname": "category",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -48,13 +48,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "naming_series",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Naming Series",
-   "options": "SER-"
-  },
-  {
    "fieldname": "section_break_tuqk",
    "fieldtype": "Section Break",
    "label": "\u0627\u0644\u0645\u0648\u0627\u062f"
@@ -62,34 +55,9 @@
   {
    "fieldname": "table_material",
    "fieldtype": "Table",
-   "hidden": 1,
    "label": "\u0627\u0644\u0645\u0648\u0627\u062f \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645\u0629 \u0641\u064a  \u0627\u0644\u062e\u062f\u0645\u0629",
-   "options": "Service Material",
-   "read_only": 1
-  },
-  {
-   "fieldname": "account_section",
-   "fieldtype": "Section Break",
-   "label": "Account "
-  },
-  {
-   "fieldname": "income_account",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "\u062d\u0633\u0627\u0628 \u0627\u0644\u062e\u062f\u0645\u0629",
-   "options": "Account",
-   "print_hide": 1
-  },
-  {
-   "fieldname": "discount_account",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "\u062d\u0633\u0627\u0628 \u0627\u0644\u062e\u0635\u0645",
-   "options": "Account"
-  },
-  {
-   "fieldname": "column_break_osor",
-   "fieldtype": "Column Break"
+   "options": "Coffee Service Materials",
+   "reqd": 1
   },
   {
    "fieldname": "image",
@@ -97,22 +65,43 @@
    "label": "Image"
   },
   {
-   "fieldname": "rate",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "\u0627\u0644\u0633\u0639\u0631",
-   "non_negative": 1,
+   "fieldname": "income_account",
+   "fieldtype": "Link",
+   "label": "\u062d\u0633\u0627\u0628 \u0627\u0644\u062e\u062f\u0645\u0629",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "statues",
+   "fieldtype": "Select",
+   "label": "Statues",
+   "options": "\u0646\u0634\u0637\n\u0645\u0644\u063a\u064a",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_yysd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_wvxw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center",
    "reqd": 1
   }
  ],
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-09 02:41:53.932754",
+ "modified": "2025-01-28 01:09:25.936878",
  "modified_by": "Administrator",
  "module": "Coffee",
  "name": "Coffee Service",
- "naming_rule": "By \"Naming Series\" field",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
