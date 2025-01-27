@@ -6,7 +6,8 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "table_no",
+  "\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644_tab",
+  "customer",
   "order_number",
   "naming_series",
   "column_break_vibm",
@@ -17,11 +18,14 @@
   "categories_buttons",
   "section_break_whso",
   "order_details",
-  "total"
+  "total",
+  "materials_tab",
+  "materials",
+  "amended_from"
  ],
  "fields": [
   {
-   "depends_on": "eval: doc.table_no\n",
+   "depends_on": "eval: doc.customer\n",
    "fieldname": "order_details",
    "fieldtype": "Table",
    "label": "\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0637\u0644\u0628",
@@ -39,13 +43,6 @@
   {
    "fieldname": "section_break_whso",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "table_no",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "\u0631\u0642\u0645 \u0627\u0644\u0637\u0627\u0648\u0644\u0647",
-   "reqd": 1
   },
   {
    "fieldname": "total",
@@ -96,14 +93,51 @@
    "label": "Naming Series",
    "options": "REC-",
    "read_only": 1
+  },
+  {
+   "fieldname": "materials_tab",
+   "fieldtype": "Tab Break",
+   "label": "\u0627\u0644\u0645\u0648\u0627\u062f"
+  },
+  {
+   "fieldname": "\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644_tab",
+   "fieldtype": "Tab Break",
+   "label": "\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644"
+  },
+  {
+   "fieldname": "materials",
+   "fieldtype": "Table",
+   "label": "\u0627\u0644\u0645\u0648\u0627\u062f",
+   "options": "Coffee Reception Materials",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Reception",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "\u0631\u0642\u0645 \u0627\u0644\u0637\u0627\u0648\u0644\u0647",
+   "options": "Customer",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2025-01-09 05:40:24.079161",
+ "modified": "2025-01-20 16:53:53.701836",
  "modified_by": "Administrator",
  "module": "Coffee",
  "name": "Reception",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -116,6 +150,7 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],
